@@ -53,18 +53,33 @@ class GestionApp(tk.Tk):
         tk.Button(frame_recherche, text="Filtrer", command=self.filtrer_ventes).pack(side=tk.LEFT, padx=5)
         tk.Button(frame_recherche, text="Réinitialiser", command=self.charger_ventes).pack(side=tk.LEFT, padx=5)
 
-        colonnes = ("id", "client", "adresse", "prix", "frais_livraison", "tracking", "date_vente",
-                    "date_envoi", "paiement", "commentaire")
+        colonnes = ("id", "Client", "Adresse", "Prix", "Livraison", "Tracking", "Date_vente",
+                    "Date_envoi", "Paiement", "Commentaire")
 
-        self.tree_ventes = ttk.Treeview(self.onglet_ventes, columns=colonnes, show="headings")
-        self.tree_ventes.pack(fill=tk.BOTH, expand=True)
+        frame_tree_ventes = tk.Frame(self.onglet_ventes)
+        frame_tree_ventes.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_ventes = ttk.Treeview(frame_tree_ventes, columns=colonnes, show="headings")
+        scrollbar_ventes = ttk.Scrollbar(frame_tree_ventes, orient="vertical", command=self.tree_ventes.yview)
+        self.tree_ventes.configure(yscrollcommand=scrollbar_ventes.set)
+
+        self.tree_ventes.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar_ventes.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Double-clic pour modifier
         self.tree_ventes.bind("<Double-1>", self.on_double_click_vente)
 
         largeurs = {
-            "id": 50, "client": 150, "adresse": 250, "prix": 100, "frais_livraison": 120,
-            "tracking": 150, "date_vente": 100, "date_envoi": 100, "paiement": 150, "commentaire": 200
+            "id": 40,
+            "Client": 150,
+            "Adresse": 250,
+            "Prix": 80,
+            "Livraison": 100,
+            "Tracking": 150,
+            "Date_vente": 100,
+            "Date_envoi": 100,
+            "Paiement": 200,
+            "Commentaire": 300
         }
 
         for col in colonnes:
@@ -85,14 +100,16 @@ class GestionApp(tk.Tk):
         for row in self.tree_ventes.get_children():
             self.tree_ventes.delete(row)
         for vente in lister_ventes():
-            self.tree_ventes.insert("", tk.END, values=vente)
+            commentaire_affiche = vente[9].replace("\n", " ") if vente[9] else ""
+            self.tree_ventes.insert("", tk.END, values=vente[:9] + (commentaire_affiche,))
 
     def filtrer_ventes(self):
         filtre = self.recherche_ventes.get().strip()
         for row in self.tree_ventes.get_children():
             self.tree_ventes.delete(row)
         for vente in lister_ventes(filtre):
-            self.tree_ventes.insert("", tk.END, values=vente)
+            commentaire_affiche = vente[9].replace("\n", " ") if vente[9] else ""
+            self.tree_ventes.insert("", tk.END, values=vente[:9] + (commentaire_affiche,))
 
     def ajouter_vente_popup(self):
         FormulaireVente(self, "Ajouter une vente", self.ajouter_vente_cb)
@@ -143,27 +160,41 @@ class GestionApp(tk.Tk):
         tk.Button(frame_recherche, text="Filtrer", command=self.filtrer_depenses).pack(side=tk.LEFT, padx=5)
         tk.Button(frame_recherche, text="Réinitialiser", command=self.charger_depenses).pack(side=tk.LEFT, padx=5)
 
-        colonnes = ("id", "categorie", "montant", "date_depense", "commentaire")
+        colonnes = ("id", "Description", "Categorie", "Montant", "Date_depense", "Commentaire")
 
-        self.tree_depenses = ttk.Treeview(self.onglet_depenses, columns=colonnes, show="headings")
-        self.tree_depenses.pack(fill=tk.BOTH, expand=True)
+        frame_tree_depenses = tk.Frame(self.onglet_depenses)
+        frame_tree_depenses.pack(fill=tk.BOTH, expand=True)
+
+        self.tree_depenses = ttk.Treeview(frame_tree_depenses, columns=colonnes, show="headings")
+        scrollbar_depenses = ttk.Scrollbar(frame_tree_depenses, orient="vertical", command=self.tree_depenses.yview)
+        self.tree_depenses.configure(yscrollcommand=scrollbar_depenses.set)
+
+        self.tree_depenses.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar_depenses.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Double-clic pour modifier
         self.tree_depenses.bind("<Double-1>", self.on_double_click_depense)
 
         largeurs = {
-            "id": 50, "categorie": 150, "montant": 100, "date_depense": 150, "commentaire": 300
+            "id": 40,
+            "Description": 250,
+            "Categorie": 150,
+            "Montant": 80,
+            "Date_depense": 120,
+            "Commentaire": 250
         }
 
         for col in colonnes:
-            self.tree_depenses.heading(col, text=col, command=lambda c=col: self.trier_tree(self.tree_depenses, c, False))
+            self.tree_depenses.heading(col, text=col,
+                                       command=lambda c=col: self.trier_tree(self.tree_depenses, c, False))
             self.tree_depenses.column(col, width=largeurs.get(col, 100))
 
         frame_btn = tk.Frame(self.onglet_depenses)
         frame_btn.pack(pady=10)
 
         tk.Button(frame_btn, text="Ajouter", command=self.ajouter_depense_popup, width=15).grid(row=0, column=0, padx=5)
-        tk.Button(frame_btn, text="Modifier", command=self.modifier_depense_popup, width=15).grid(row=0, column=1, padx=5)
+        tk.Button(frame_btn, text="Modifier", command=self.modifier_depense_popup, width=15).grid(row=0, column=1,
+                                                                                                  padx=5)
         tk.Button(frame_btn, text="Supprimer", command=self.supprimer_depense, width=15).grid(row=0, column=2, padx=5)
         tk.Button(frame_btn, text="Rafraîchir", command=self.charger_depenses, width=15).grid(row=0, column=3, padx=5)
 
@@ -237,7 +268,8 @@ class GestionApp(tk.Tk):
         self.label_net = tk.Label(frame_bilan, text="", font=("Arial", 16, "bold"))
         self.label_net.grid(row=3, column=0, pady=20, sticky="w")
 
-        tk.Button(frame_bilan, text="Rafraîchir bilan", command=self.afficher_bilan, width=20).grid(row=4, column=0, pady=20)
+        tk.Button(frame_bilan, text="Rafraîchir bilan", command=self.afficher_bilan, width=20).grid(row=4, column=0,
+                                                                                                    pady=20)
 
         self.afficher_bilan()
 

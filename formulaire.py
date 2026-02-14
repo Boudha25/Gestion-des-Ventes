@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from tkcalendar import DateEntry
 
 
@@ -22,9 +23,17 @@ class FormulaireVente(tk.Toplevel):
             if label in ("Date vente", "Date envoi"):
                 entry = DateEntry(self, date_pattern='yyyy-mm-dd')
             elif label == "Commentaire":
-                entry = tk.Entry(self, width=50)
+                entry = tk.Text(self, width=50, height=5)
             elif label in ("Prix", "Frais livraison"):
                 entry = tk.Entry(self)
+            elif label == "Paiement":
+                entry = ttk.Combobox(self, values=[
+                    "Argent",
+                    "Interact à 418-575-0531",
+                    "Interact à stephaneapril@hotmail.com",
+                    "Interact à boudha25@hotmail.com",
+                    "PayPal"
+                ], width=37, state="readonly")
             else:
                 entry = tk.Entry(self, width=40)
 
@@ -38,12 +47,12 @@ class FormulaireVente(tk.Toplevel):
             self.entries["Client"].insert(0, values[1])
             self.entries["Adresse"].insert(0, values[2])
             self.entries["Prix"].insert(0, values[3])
-            self.entries["Frais livraison"].insert(0, values[4])
+            float(self.entries["Frais livraison"].insert(0, values[4]))
             self.entries["Tracking"].insert(0, values[5])
             self.entries["Date vente"].set_date(values[6])
             self.entries["Date envoi"].set_date(values[7])
-            self.entries["Paiement"].insert(0, values[8])
-            self.entries["Commentaire"].insert(0, values[9])
+            self.entries["Paiement"].set(values[8])
+            self.entries["Commentaire"].insert("1.0", values[9])
             tk.Button(self, text="Enregistrer", command=self.enregistrer_modif).grid(row=len(labels), column=0, columnspan=2, pady=10)
         else:
             # Mode ajout
@@ -60,7 +69,7 @@ class FormulaireVente(tk.Toplevel):
                 self.entries["Date vente"].get(),
                 self.entries["Date envoi"].get(),
                 self.entries["Paiement"].get(),
-                self.entries["Commentaire"].get()]
+                self.entries["Commentaire"].get("1.0", "end-1c")]
         self.callback(data)
         self.destroy()
 
@@ -73,7 +82,7 @@ class FormulaireVente(tk.Toplevel):
                 self.entries["Date vente"].get(),
                 self.entries["Date envoi"].get(),
                 self.entries["Paiement"].get(),
-                self.entries["Commentaire"].get()]
+                self.entries["Commentaire"].get("1.0", "end-1c")]
         self.callback(data, self.vente_id)
         self.destroy()
 
@@ -86,7 +95,7 @@ class FormulaireDepense(tk.Toplevel):
         self.values = values
 
         labels = [
-            "Catégorie", "Montant", "Date dépense", "Commentaire"
+             "Description", "Catégorie", "Montant", "Date dépense", "Commentaire"
         ]
 
         self.entries = {}
@@ -95,7 +104,7 @@ class FormulaireDepense(tk.Toplevel):
 
             if label == "Date dépense":
                 entry = DateEntry(self, date_pattern='yyyy-mm-dd')
-            elif label == "Commentaire":
+            elif label in ("Description", "Commentaire"):
                 entry = tk.Entry(self, width=50)
             elif label == "Montant":
                 entry = tk.Entry(self)
@@ -109,10 +118,11 @@ class FormulaireDepense(tk.Toplevel):
         if values:
             # Mode modification
             self.depense_id = values[0]
-            self.entries["Catégorie"].insert(0, values[1])
-            self.entries["Montant"].insert(0, values[2])
-            self.entries["Date dépense"].set_date(values[3])
-            self.entries["Commentaire"].insert(0, values[4])
+            self.entries["Description"].insert(0, values[1])
+            self.entries["Catégorie"].insert(0, values[2])
+            self.entries["Montant"].insert(0, values[3])
+            self.entries["Date dépense"].set_date(values[4])
+            self.entries["Commentaire"].insert(0, values[5])
             tk.Button(self, text="Enregistrer", command=self.enregistrer_modif).grid(row=len(labels), column=0, columnspan=2, pady=10)
         else:
             # Mode ajout
@@ -120,17 +130,23 @@ class FormulaireDepense(tk.Toplevel):
             tk.Button(self, text="Ajouter", command=self.enregistrer_ajout).grid(row=len(labels), column=0, columnspan=2, pady=10)
 
     def enregistrer_ajout(self):
-        data = [self.entries["Catégorie"].get(),
-                float(self.entries["Montant"].get() or 0),
-                self.entries["Date dépense"].get(),
-                self.entries["Commentaire"].get()]
+        data = [
+            self.entries["Description"].get(),
+            self.entries["Catégorie"].get(),
+            float(self.entries["Montant"].get() or 0),
+            self.entries["Date dépense"].get(),
+            self.entries["Commentaire"].get()
+        ]
         self.callback(data)
         self.destroy()
 
     def enregistrer_modif(self):
-        data = [self.entries["Catégorie"].get(),
-                float(self.entries["Montant"].get() or 0),
-                self.entries["Date dépense"].get(),
-                self.entries["Commentaire"].get()]
+        data = [
+            self.entries["Description"].get(),
+            self.entries["Catégorie"].get(),
+            float(self.entries["Montant"].get() or 0),
+            self.entries["Date dépense"].get(),
+            self.entries["Commentaire"].get()
+        ]
         self.callback(data, self.depense_id)
         self.destroy()

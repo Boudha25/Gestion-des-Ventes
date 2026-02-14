@@ -23,7 +23,7 @@ def creer_tables():
             client TEXT NOT NULL,
             adresse TEXT,
             prix REAL NOT NULL,
-            frais_livraison REAL DEFAULT 0,
+            livraison REAL DEFAULT 0,
             tracking TEXT,
             date_vente TEXT,
             date_envoi TEXT,
@@ -36,6 +36,7 @@ def creer_tables():
     cur.execute("""
         CREATE TABLE IF NOT EXISTS depenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            description TEXT
             categorie TEXT NOT NULL,
             montant REAL NOT NULL,
             date_depense TEXT NOT NULL,
@@ -94,13 +95,13 @@ def supprimer_vente(vente_id):
 # ========================
 # Fonctions Dépenses
 # ========================
-def ajouter_depense(categorie, montant, date_depense, commentaire):
+def ajouter_depense(description, categorie, montant, date_depense, commentaire):
     conn = get_connexion()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO depenses (categorie, montant, date_depense, commentaire)
-        VALUES (?, ?, ?, ?)
-    """, (categorie, montant, date_depense, commentaire))
+        INSERT INTO depenses (description, categorie, montant, date_depense, commentaire)
+        VALUES (?, ?, ?, ?, ?)
+    """, (description, categorie, montant, date_depense, commentaire))
     conn.commit()
     conn.close()
 
@@ -110,7 +111,7 @@ def lister_depenses(filtre=None):
     if filtre:
         cur.execute("""
             SELECT * FROM depenses
-            WHERE categorie LIKE ? OR commentaire LIKE ?
+            WHERE categorie LIKE ? OR description LIKE ?
         """, (f"%{filtre}%", f"%{filtre}%"))
     else:
         cur.execute("SELECT * FROM depenses")
@@ -118,14 +119,14 @@ def lister_depenses(filtre=None):
     conn.close()
     return rows
 
-def modifier_depense(depense_id, categorie, montant, date_depense, commentaire):
+def modifier_depense(depense_id, description, categorie, montant, date_depense, commentaire):
     conn = get_connexion()
     cur = conn.cursor()
     cur.execute("""
         UPDATE depenses
-        SET categorie=?, montant=?, date_depense=?, commentaire=?
+        SET description=?, categorie=?, montant=?, date_depense=?, commentaire=?
         WHERE id=?
-    """, (categorie, montant, date_depense, commentaire, depense_id))
+    """, (description, categorie, montant, date_depense, commentaire, depense_id))
     conn.commit()
     conn.close()
 
